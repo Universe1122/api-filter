@@ -40,7 +40,8 @@ class BurpExtender(IBurpExtender, IHttpListener, IProxyListener, IScannerListene
     def processProxyMessage(self, messageIsRequest, message):
         if(messageIsRequest == False):
             packet = Packet(self._helpers, message.getMessageInfo())
-            print(packet.request.toString())
+            print(packet.response.toString())
+            print("\n")
 
             # request = Request(self._helpers.analyzeRequest(message.getMessageInfo().getRequest()), message.getMessageInfo().getHttpService())
             # response_info = self._helpers.analyzeResponse(message.getMessageInfo().getResponse())

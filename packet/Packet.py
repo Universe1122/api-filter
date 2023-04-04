@@ -6,9 +6,12 @@ class Packet:
     def __init__(self, helpers, IHttpRequestResponse):
         request_data = helpers.analyzeRequest(IHttpRequestResponse.getRequest())
         request_body = IHttpRequestResponse.getRequest()[request_data.getBodyOffset() : ]
+
         response_data = helpers.analyzeResponse(IHttpRequestResponse.getResponse())
+        response_body = IHttpRequestResponse.getResponse()[response_data.getBodyOffset() : ]
 
         self.request = self.Request(request_data, IHttpRequestResponse.getHttpService(), request_body)
+        self.response = self.Response(response_data, response_body)
 
     class Request:
         def __init__(self, request_data, http_service, body):
@@ -80,7 +83,7 @@ class Packet:
                 Retruns:
                     None
             """
-            return """{0} {1} {2}\n{3}\n\n{4}""".format(self.method, self.urlToString(), self.http_version, self.headerToString(), self.body)
+            return "{0} {1} {2}\n{3}\n\n{4}".format(self.method, self.urlToString(), self.http_version, self.headerToString(), self.body)
 
 
         def urlToString(self):
@@ -119,8 +122,71 @@ class Packet:
             
             return "\n".join(headers)
 
-        #     ## TODO body parse
-
     class Response:
-        def __init__(self, response_data):
-            pass
+        def __init__(self, response_data, body):
+            self.http_version = None
+            self.status_code = None
+            self.headers = {}
+            self.body = None
+            self.mime = None
+
+            self._parse(response_data, body)
+
+        def _parse(self, response_data, body):
+            """
+            _parse() function is parsed request_data and make to Object request.
+                Args:
+                    response_data (IRequestInfo): parsed value of callback.getHelpers().analyzeResponse()
+                    body         (byte)
+                Retruns:
+                    None
+            """
+            headers = response_data.getHeaders()
+            
+            ######## Set Header ########
+            first_header = headers[0].split(" ")
+            self.http_version = first_header[0]
+            self.status_code = "{0} {1}".format(first_header[1], first_header[2])
+
+            for header in headers[1:]:
+                header_info = header.split(": ")
+                self.headers[header_info[0]] = header_info[1]
+            ############################
+
+            ## TODO unsupported operand type(s) for +: 'NoneType' and 'str'
+            ############## Set Body ###############
+            try:
+                body = body.tolist()
+                for c in body:
+                    self.body += chr(c)
+            except Exception as e:
+                print(e)
+            #######################################
+
+        
+        def toString(self):
+            """
+            toString() function is return Object request to string.
+                Args:
+                    None
+                Retruns:
+                    None
+            """
+            return "{0} {1}\n{2}\n\n{3}".format(self.http_version, self.status_code, self.headerToString(), self.body)
+        
+
+        def headerToString(self):
+            """
+            headerToString() function is return headers to string.
+                Args:
+                    None
+                Retruns:
+                    None
+            """
+            headers = list()
+
+            for key in self.headers.keys():
+                ## NOTICE, key and value type is unicode
+                headers.append("{0}: {1}".format(key, self.headers[key]))
+            
+            return "\n".join(headers)
