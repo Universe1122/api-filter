@@ -10,7 +10,7 @@ from java.io import PrintWriter
 import requests
 import threading
 from server.app import server_run
-from packet.Packet import Request
+from packet.Packet import Packet
 
 class BurpExtender(IBurpExtender, IHttpListener, IProxyListener, IScannerListener, IExtensionStateListener):
     def	registerExtenderCallbacks(self, callbacks):
@@ -39,11 +39,11 @@ class BurpExtender(IBurpExtender, IHttpListener, IProxyListener, IScannerListene
     # implement IProxyListener
     def processProxyMessage(self, messageIsRequest, message):
         if(messageIsRequest == False):
-            request = Request(self._helpers.analyzeRequest(message.getMessageInfo().getRequest()))
+            packet = Packet(self._helpers, message.getMessageInfo())
+            print(packet.request.toString())
 
-            request.toString()
-
-            response_info = self._helpers.analyzeResponse(message.getMessageInfo().getResponse())
+            # request = Request(self._helpers.analyzeRequest(message.getMessageInfo().getRequest()), message.getMessageInfo().getHttpService())
+            # response_info = self._helpers.analyzeResponse(message.getMessageInfo().getResponse())
             
     
     # implement IProxyListener
