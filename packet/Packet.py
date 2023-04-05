@@ -127,7 +127,7 @@ class Packet:
             self.http_version = None
             self.status_code = None
             self.headers = {}
-            self.body = None
+            self.body = ""
             self.mime = None
 
             self._parse(response_data, body)
@@ -136,8 +136,8 @@ class Packet:
             """
             _parse() function is parsed request_data and make to Object request.
                 Args:
-                    response_data (IRequestInfo): parsed value of callback.getHelpers().analyzeResponse()
-                    body         (byte)
+                    response_data (IResponseInfo): parsed value of callback.getHelpers().analyzeResponse()
+                    body          (byte)
                 Retruns:
                     None
             """
@@ -153,7 +153,6 @@ class Packet:
                 self.headers[header_info[0]] = header_info[1]
             ############################
 
-            ## TODO unsupported operand type(s) for +: 'NoneType' and 'str'
             ############## Set Body ###############
             try:
                 body = body.tolist()
@@ -162,6 +161,13 @@ class Packet:
             except Exception as e:
                 print(e)
             #######################################
+
+
+            ############# Set MIME #############
+            self.mime = response_data.getStatedMimeType()
+            if self.mime == "":
+                self.mime = response_data.getInferredMimeType()
+            ####################################
 
         
         def toString(self):
